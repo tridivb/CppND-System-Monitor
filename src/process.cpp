@@ -115,10 +115,8 @@ void Process::SetCommand() {
 // TODO: Return this process's updated CPU utilization instead of aggregate
 float Process::CpuUtilization() { return cpuutil_; }
 
-// TODO: Return the command that generated this process
 string Process::Command() { return command_; }
 
-// TODO: Return this process's memory utilization
 string Process::Ram() { return memutil_; }
 
 string Process::User() { return user_; }
@@ -127,8 +125,6 @@ long int Process::UpTime() {
   return uptime_ - long(starttime_ / sysconf(_SC_CLK_TCK));
 }
 
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
 bool Process::operator<(Process const& a) const {
   return a.cpuutil_ < this->cpuutil_;
 }
