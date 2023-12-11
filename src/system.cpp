@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 
+#include <algorithm>
 #include <cstddef>
 #include <iostream>
 #include <set>
@@ -23,6 +24,7 @@ void System::Cache() {
   cpu_ = Processor();
   uptime_ = LinuxParser::UpTime();
   memutil_ = LinuxParser::MemoryUtilization();
+  SetProcesses();
 }
 
 Processor& System::Cpu() { return cpu_; }
@@ -42,8 +44,12 @@ int System::TotalProcesses() const { return cpu_.total_processes_; }
 long int System::UpTime() { return uptime_; }
 
 void System::SetProcesses() {
-  // vector<int> pids = LinuxParser::Pids();
-  // for (auto& pid : pids){
-  //     processes_.push_back(Process(pid))
-  // }
+  vector<int> pids = LinuxParser::Pids();
+  for (auto& pid : pids) {
+    processes_.push_back(Process(pid));
+  }
+  if (processes_.size() > 1) {
+    std::sort(processes_.begin(), processes_.end(),
+              [](Process const& a, Process const& b) { return a < b; });
+  }
 }
