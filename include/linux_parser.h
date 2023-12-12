@@ -40,18 +40,22 @@ enum CPUStates {
   kGuest_,
   kGuestNice_
 };
+enum ProcCPUStates { kPUser_ = 0, kPKernel_, kCPUser_, kCPKernel_, kPStart_ };
 std::vector<std::string> CpuUtilization();
+std::vector<std::string> CpuUtilization(int pid);
 long Jiffies();
-long ActiveJiffies();
 long ActiveJiffies(int pid);
+long ActiveJiffies();
 long IdleJiffies();
 
 // Processes
+std::vector<std::string> ReadProcessStatus(int pid);
 std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);
 std::string User(int pid);
 long int UpTime(int pid);
+
 };  // namespace LinuxParser
 
 #endif

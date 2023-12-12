@@ -16,18 +16,14 @@ class Process {
   std::string Ram();
   long int UpTime();
   bool operator<(Process const& a) const;
-  void ReadStats();
+
   void SetCpuUtilization();
-  void ReadStatus();
-  void SetUser();
-  void SetCommand();
 
  private:
-  int pid_{0};
-  long int utime_{0}, stime_{0}, cutime_{0}, cstime_{0}, starttime_{0},
-      uptime_{0};
+  int pid_ = 0;
   float cpuutil_ = 0.0;
-  std::string command_{}, memutil_{}, user_{}, uid_{};
+  long int uptime_{0}, total_{0}, prev_total{0};
+  std::string command_{}, ram_{}, user_{};
 };
 
 #endif
