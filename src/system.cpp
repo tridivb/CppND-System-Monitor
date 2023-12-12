@@ -43,7 +43,7 @@ int System::TotalProcesses() const { return cpu_.total_processes_; }
 long int System::UpTime() { return uptime_; }
 
 void System::SetProcesses() {
-  if (!processes_.empty()){
+  if (!processes_.empty()) {
     processes_.clear();
   }
   vector<int> pids = LinuxParser::Pids();

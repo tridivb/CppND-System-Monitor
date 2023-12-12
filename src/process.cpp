@@ -4,7 +4,7 @@
 
 #include <cctype>
 #include <cmath>
-#include <filesystem>
+// #include <filesystem>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -17,13 +17,15 @@ using std::vector;
 
 Process::Process(int pid) {
   // initialize values only the process is still running else default
-  if (std::filesystem::exists(LinuxParser::kProcDirectory + to_string(pid))) {
-    pid_ = pid;
-    command_ = LinuxParser::Command(pid_);
-    ram_ = LinuxParser::Ram(pid_);
-    user_ = LinuxParser::User(pid_);
-    SetCpuUtilization();
-  }
+  // filesystem doesn't work on the udacity workspace
+  // if (std::filesystem::exists(LinuxParser::kProcDirectory + to_string(pid)))
+  // {
+  pid_ = pid;
+  command_ = LinuxParser::Command(pid_);
+  ram_ = LinuxParser::Ram(pid_);
+  user_ = LinuxParser::User(pid_);
+  SetCpuUtilization();
+  // }
 }
 
 int Process::Pid() { return pid_; }
