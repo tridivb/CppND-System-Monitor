@@ -41,7 +41,13 @@ void Process::SetCpuUtilization() {
 
 float Process::CpuUtilization() { return cpuutil_; }
 
-string Process::Command() { return command_; }
+string Process::Command() {
+  if (command_.size() <= 50) {
+    return command_;
+  } else {
+    return command_.substr(0, 50) + "...";
+  }
+}
 
 string Process::Ram() { return ram_; }
 

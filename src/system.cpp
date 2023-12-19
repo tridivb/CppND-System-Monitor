@@ -47,8 +47,8 @@ void System::SetProcesses() {
     processes_.clear();
   }
   vector<int> pids = LinuxParser::Pids();
-  for (auto& pid : pids) {
-    processes_.push_back(Process(pid));
+  for (const int& pid : pids) {
+    processes_.emplace_back(pid);
   }
   if (processes_.size() > 1) {
     std::sort(processes_.begin(), processes_.end(),

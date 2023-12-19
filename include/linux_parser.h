@@ -17,6 +17,16 @@ const std::string kMeminfoFilename{"/meminfo"};
 const std::string kVersionFilename{"/version"};
 const std::string kOSPath{"/etc/os-release"};
 const std::string kPasswordPath{"/etc/passwd"};
+const std::string kOSName("PRETTY_NAME");
+const std::string kMemTotal("MemTotal");
+const std::string kMemFree("MemFree");
+const std::string kCPU("cpu");
+const std::string kTotalProcess("processes");
+const std::string kRunningProcess("procs_running");
+const std::string kUid("Uid");
+// const std::string kRam("VmSize");
+// VmRSS provides RAM allocation
+const std::string kRam("VmRSS");
 
 // System
 float MemoryUtilization();
@@ -49,7 +59,6 @@ long ActiveJiffies();
 long IdleJiffies();
 
 // Processes
-std::vector<std::string> ReadProcessStatus(int pid);
 std::string Command(int pid);
 std::string Ram(int pid);
 std::string Uid(int pid);

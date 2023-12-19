@@ -13,19 +13,21 @@ using std::string;
 using std::to_string;
 using std::vector;
 
-string LinuxParser::OperatingSystem() {
-  string line;
-  string key;
-  string value;
-  std::ifstream filestream(kOSPath);
+// Read multi line file and get value by key
+template <typename T>
+T getKeyValue(string file_path, string key) {
+  T value;
+  std::ifstream filestream(file_path);
   if (filestream.is_open()) {
+    string k, line;
     while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ' ', '_');
       std::replace(line.begin(), line.end(), '=', ' ');
       std::replace(line.begin(), line.end(), '"', ' ');
+      std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
-      while (linestream >> key >> value) {
-        if (key == "PRETTY_NAME") {
+      while (linestream >> k >> value) {
+        if (key == k) {
           std::replace(value.begin(), value.end(), '_', ' ');
           return value;
         }
@@ -35,16 +37,28 @@ string LinuxParser::OperatingSystem() {
   return value;
 }
 
-string LinuxParser::Kernel() {
-  string os, kernel, version;
-  string line;
-  std::ifstream stream(kProcDirectory + kVersionFilename);
-  if (stream.is_open()) {
-    std::getline(stream, line);
+// Read single line file and get value
+template <typename T>
+T getLineValue(string file_path, int position = 0) {
+  T value;
+  std::ifstream filestream(file_path);
+  if (filestream.is_open()) {
+    string line;
+    std::getline(filestream, line);
     std::istringstream linestream(line);
-    linestream >> os >> version >> kernel;
+    for (int idx = 0; idx <= position; idx++) {
+      linestream >> value;
+    }
   }
-  return kernel;
+  return value;
+}
+
+string LinuxParser::OperatingSystem() {
+  return getKeyValue<string>(kOSPath, kOSName);
+}
+
+string LinuxParser::Kernel() {
+  return getLineValue<string>(kProcDirectory + kVersionFilename, 2);
 }
 
 // BONUS: Update this to use std::filesystem
@@ -69,38 +83,15 @@ vector<int> LinuxParser::Pids() {
 
 // TODO: Check if there is a more accurate memory util calculation
 float LinuxParser::MemoryUtilization() {
-  string key, value, line;
-  double memtotal, memfree;
-  std::ifstream memfilestream(kProcDirectory + kMeminfoFilename);
-  if (memfilestream.is_open()) {
-    while (std::getline(memfilestream, line)) {
-      std::replace(line.begin(), line.end(), ':', ' ');
-      std::istringstream linestream(line);
-      while (linestream >> key >> value) {
-        if (key == "MemTotal") {
-          memtotal = std::stold(value);
-        } else if (key == "MemFree") {
-          memfree = std::stold(value);
-          return float((memtotal - memfree) / memtotal);
-        }
-      }
-    }
-  }
-  return 0.0;
+  double total_memory = std::stod(
+      getKeyValue<string>(kProcDirectory + kMeminfoFilename, kMemTotal));
+  double free_memory = std::stod(
+      getKeyValue<string>(kProcDirectory + kMeminfoFilename, kMemFree));
+  return float((total_memory - free_memory) / total_memory);
 }
 
 long LinuxParser::UpTime() {
-  std::ifstream uptimestream(kProcDirectory + kUptimeFilename);
-  if (uptimestream.is_open()) {
-    string line;
-    double uptime;
-    std::getline(uptimestream, line);
-    std::istringstream linestream(line);
-    linestream >> uptime;
-    return long(uptime);
-  }
-
-  return 0;
+  return std::stol(getLineValue<string>(kProcDirectory + kUptimeFilename, 0));
 }
 
 long LinuxParser::Jiffies() {
@@ -163,7 +154,7 @@ vector<string> LinuxParser::CpuUtilization(int pid) {
     for (int idx = 0; idx < 22; idx++) {
       linestream >> value;
       if (std::find(indices.begin(), indices.end(), idx) != indices.end()) {
-        processstats.push_back(value);
+        processstats.emplace_back(value);
       }
     }
   }
@@ -198,45 +189,19 @@ string LinuxParser::Command(int pid) {
   return command;
 }
 
-vector<string> LinuxParser::ReadProcessStatus(int pid) {
-  vector<string> pidstatus{};
-  std::ifstream statustream(LinuxParser::kProcDirectory + to_string(pid) +
-                            LinuxParser::kStatusFilename);
-  if (statustream.is_open()) {
-    string line;
-    while (std::getline(statustream, line)) {
-      std::replace(line.begin(), line.end(), ':', ' ');
-      std::istringstream linestream(line);
-      string key, value;
-      linestream >> key;
-      if (key == "Uid") {
-        linestream >> value;
-        pidstatus.push_back(value);
-      } else if (key == "VmSize") {
-        linestream >> value;
-        // convert kB to mB
-        pidstatus.push_back(to_string(std::stol(value) / 1024));
-        break;
-      }
-    }
-  }
-  return pidstatus;
-}
-
 string LinuxParser::Ram(int pid) {
-  auto status = LinuxParser::ReadProcessStatus(pid);
-  if (status.size() == 2) {
-    return status[1];
-  }
-  return to_string(0);
+  long ram = std::stol(getKeyValue<string>(LinuxParser::kProcDirectory +
+                                               to_string(pid) +
+                                               LinuxParser::kStatusFilename,
+                                           LinuxParser::kRam)) /
+             1024;
+  return to_string(ram);
 }
 
 string LinuxParser::Uid(int pid) {
-  auto status = LinuxParser::ReadProcessStatus(pid);
-  if (status.size()) {
-    return status[0];
-  }
-  return string();
+  return getKeyValue<string>(LinuxParser::kProcDirectory + to_string(pid) +
+                                 LinuxParser::kStatusFilename,
+                             LinuxParser::kUid);
 }
 
 string LinuxParser::User(int pid) {
